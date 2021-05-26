@@ -133,6 +133,36 @@ namespace MicroJson
         }
 
         [Test]
+        public void TestEmitDefaultValues()
+        {
+            var s = @"{""B"":true,""D"":-1,""E"":""Test1, Test2"",""E2"":""0"",""I"":4711,""Inner"":{""b2"":""xyz""},""LS"":[""a"",""b"",""c""],""S"":""Test"",""X"":{""a"":""A"",""b"":""B""}}";
+            JsonSerializer serializer = new JsonSerializer() { EmitDefaultValues = true };
+            var ser = serializer.Deserialize<Serialize>(s);
+            Assert.That(ser.I, Is.EqualTo(4711));
+            var s2 = serializer.Serialize(ser);
+            Assert.That(s2, Is.EqualTo(s));
+            var ser2 = serializer.Deserialize<Serialize>(s2);
+            Assert.That(ser2.I, Is.EqualTo(4711));
+            var s3 = serializer.Serialize(ser2);
+            Assert.That(s3, Is.EqualTo(s));
+        }
+
+        [Test]
+        public void TestEmitNulls()
+        {
+            var s = @"{""AE"":null,""B"":true,""D"":-1,""E"":""Test1, Test2"",""Inner"":{""b2"":""xyz""},""LS"":[""a"",""b"",""c""],""S"":""Test"",""X"":{""a"":""A"",""b"":""B""}}";
+            JsonSerializer serializer = new JsonSerializer() { EmitNulls = true };
+            var ser = serializer.Deserialize<Serialize>(s);
+            Assert.That(ser.I, Is.EqualTo(4711));
+            var s2 = serializer.Serialize(ser);
+            Assert.That(s2, Is.EqualTo(s));
+            var ser2 = serializer.Deserialize<Serialize>(s2);
+            Assert.That(ser2.I, Is.EqualTo(4711));
+            var s3 = serializer.Serialize(ser2);
+            Assert.That(s3, Is.EqualTo(s));
+        }
+
+        [Test]
         public void TestStrings()
         {
             var str = "\" \\ / \b \f \n \r \t \u4711 \\n \\\" \\\\";

@@ -121,7 +121,21 @@ namespace MicroJson
         public JsonSerializer()
         {
             TypeInfoPropertyName = "@type";
+            EmitDefaultValues = false;
+            EmitNulls = false;
         }
+
+        /// <summary>
+        /// Prevents serialization of non-null default values, such as 0 for integer types.
+        /// The default is false.
+        /// </summary>
+        public bool EmitDefaultValues { get; set; }
+
+        /// <summary>
+        /// Prevents serialization of default null values for reference types.
+        /// The default is false.
+        /// </summary>
+        public bool EmitNulls { get; set; }
 
         /// <summary>
         /// <para>
@@ -563,7 +577,7 @@ namespace MicroJson
             {
                 object val = member.Get(o);
 
-                if (val != null && (member.DefaultValue == null || !val.Equals(member.DefaultValue)))
+                if (val == null && EmitNulls || (val != null && (EmitDefaultValues || member.DefaultValue == null || !val.Equals(member.DefaultValue))))
                 {
                     var v = Serialize(val);
                     s.Append(@"""");
