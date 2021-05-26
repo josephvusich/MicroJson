@@ -178,6 +178,11 @@ namespace MicroJson
             public string S { get; set; }
             public int I { get; set; }
             public List<int> L;
+            public int this[int i]
+            {
+                get { return i; }
+                set { }
+            }
         }
 
         [Test]

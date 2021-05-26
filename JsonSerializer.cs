@@ -620,6 +620,7 @@ namespace MicroJson
             {
                 var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase)
                     .Where(p => p.CanWrite)
+                    .Where(p => p.GetIndexParameters().Length == 0)
                     .Select(p => BuildGetterMember(p));
 
                 var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase)
