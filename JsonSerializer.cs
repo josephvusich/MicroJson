@@ -123,6 +123,7 @@ namespace MicroJson
             TypeInfoPropertyName = "@type";
             EmitDefaultValues = false;
             EmitNulls = false;
+            MemberFilter = (props, type) => props.OrderBy(p => p.MemberInfo.Name, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -136,6 +137,12 @@ namespace MicroJson
         /// The default is false.
         /// </summary>
         public bool EmitNulls { get; set; }
+
+        /// <summary>
+        /// Specifies a custom filter/sort method for output order of serialized fields.
+        /// The default filter returns all properties sorted by name, ignoring case.
+        /// </summary>
+        public Func<IEnumerable<GetterMember>, Type, IEnumerable<GetterMember>> MemberFilter { get; set; }
 
         /// <summary>
         /// <para>
@@ -581,7 +588,7 @@ namespace MicroJson
                 {
                     var v = Serialize(val);
                     s.Append(@"""");
-                    s.Append(member.Name);
+                    s.Append(member.MemberInfo.Name);
                     s.Append(@""":");
                     s.Append(v);
                     s.Append(",");
@@ -617,11 +624,29 @@ namespace MicroJson
 				s.Remove(s.Length - 1, 1);
 		}
 
-        class GetterMember
+        /// <summary>
+        /// A temporary wrapper for a field/property to be serialized.
+        /// </summary>
+        public class GetterMember
         {
-            public string Name { get; set; }
-            public Func<object, object> Get { get; set; }
-            public object DefaultValue { get; set; }
+            /// <summary>
+            /// Given the instance, returns the value of this field/property.
+            /// </summary>
+            public Func<object, object> Get { get; private set; }
+            /// <summary>
+            /// The default value for this field/property Type.
+            /// </summary>
+            public object DefaultValue { get; private set; }
+            /// <summary>
+            /// The MemberInfo for this field/property.
+            /// </summary>
+            public MemberInfo MemberInfo { get; private set; }
+
+            internal GetterMember(Func<object, object> get, object defaultValue, MemberInfo memberInfo) {
+                Get = get;
+                DefaultValue = defaultValue;
+                MemberInfo = memberInfo;
+            }
         }
 
         private Dictionary<Type, GetterMember[]> MembersCache = new Dictionary<Type, GetterMember[]>();
@@ -640,7 +665,7 @@ namespace MicroJson
                 var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase)
                     .Select(f => BuildGetterMember(f));
 
-                members = props.Concat(fields).OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+                members = MemberFilter(props.Concat(fields), type).ToArray();
 
                 MembersCache[type] = members;
             }
@@ -651,23 +676,21 @@ namespace MicroJson
         private static GetterMember BuildGetterMember(PropertyInfo p)
         {
             var defaultAttribute = p.GetCustomAttributes(typeof(DefaultValueAttribute), true).FirstOrDefault() as DefaultValueAttribute;
-            return new GetterMember
-            {
-                Name = p.Name,
-                Get = (Func<object, object>)(o => p.GetValue(o, null)),
-                DefaultValue = defaultAttribute != null ? defaultAttribute.Value : GetDefaultValueForType(p.PropertyType)
-            };
+            return new GetterMember(
+                (Func<object, object>)(o => p.GetValue(o, null)),
+                defaultAttribute != null ? defaultAttribute.Value : GetDefaultValueForType(p.PropertyType),
+                p
+            );
         }
 
         private static GetterMember BuildGetterMember(FieldInfo f)
         {
             var defaultAttribute = f.GetCustomAttributes(typeof(DefaultValueAttribute), true).FirstOrDefault() as DefaultValueAttribute;
-            return new GetterMember
-            {
-                Name = f.Name,
-                Get = (o => f.GetValue(o)),
-                DefaultValue = defaultAttribute != null ? defaultAttribute.Value : GetDefaultValueForType(f.FieldType)
-            };
+            return new GetterMember(
+                (o => f.GetValue(o)),
+                defaultAttribute != null ? defaultAttribute.Value : GetDefaultValueForType(f.FieldType),
+                f
+            );
         }
 
         private static object GetDefaultValueForType(Type type)
