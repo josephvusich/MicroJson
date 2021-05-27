@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31005.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroJson", "MicroJson.csproj", "{64EE0B6F-498C-427C-AA81-E8039E6BF29D}"
 EndProject
@@ -12,7 +12,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{ECD1D1
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MicroJsonShared", "MicroJsonShared\MicroJsonShared.shproj", "{B209DE06-E2E3-4C73-963A-7F11F49B1F30}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		MicroJsonShared\MicroJsonShared.projitems*{64ee0b6f-498c-427c-aa81-e8039e6bf29d}*SharedItemsImports = 4
+		MicroJsonShared\MicroJsonShared.projitems*{b209de06-e2e3-4c73-963a-7f11f49b1f30}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -29,5 +35,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4110C6F5-A1B6-428B-9C6C-C9C3B39FEF37}
 	EndGlobalSection
 EndGlobal
